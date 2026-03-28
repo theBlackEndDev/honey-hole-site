@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HoneyHole — Find Your Honey Hole</title>
+  <meta name="description" content="The offline-first fishing logbook that puts your spots, your catches, and your data — all on your phone. No paywalls, no cell signal required." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐟</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Variables ─────────────────────────────── */
+    :root {
+      --bg: #060D1A;
+      --bg-2: #0A1120;
+      --bg-3: #0F1A2E;
+      --surface: #111827;
+      --border: #1E2D42;
+      --teal: #0D9488;
+      --teal-bright: #14B8A6;
+      --teal-dim: rgba(13,148,136,0.15);
+      --teal-glow: rgba(13,148,136,0.4);
+      --amber: #F59E0B;
+      --text: #F1F5F9;
+      --muted: #64748B;
+      --muted-2: #94A3B8;
+      --white: #FFFFFF;
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+
+    /* ─── Reset ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── Utilities ──────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--teal);
+      color: var(--white);
+      box-shadow: 0 0 30px var(--teal-glow);
+    }
+    .btn-primary:hover {
+      background: var(--teal-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 0 40px var(--teal-glow);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--teal-dim);
+      color: var(--teal-bright);
+      border: 1px solid rgba(20,184,166,0.2);
+    }
+    .section-label {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 1.1rem;
+      color: var(--muted-2);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ─── Navbar ────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(6,13,26,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--teal);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .nav-logo-text {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+    nav ul {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    nav ul a {
+      color: var(--muted-2);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--white); }
+    .nav-cta {
+      padding: 10px 20px !important;
+      font-size: 0.875rem !important;
+    }
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    /* ─── Hero ──────────────────────────────────── */
+    .hero {
+      padding: 140px 0 80px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at center, rgba(13,148,136,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--teal);
+    }
+    .hero-tagline {
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      color: var(--muted-2);
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+    .hero-email-form {
+      display: flex;
+      gap: 12px;
+      max-width: 480px;
+      margin: 0 auto 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .hero-email-form input {
+      flex: 1;
+      min-width: 220px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--white);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .hero-email-form input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px var(--teal-dim);
+    }
+    .hero-email-form input::placeholder { color: var(--muted); }
+    .hero-email-form .btn { flex-shrink: 0; }
+    .hero-social-proof {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .hero-social-proof strong { color: var(--teal-bright); }
+    .hero-visual {
+      margin-top: 60px;
+      position: relative;
+    }
+    .hero-phone {
+      max-width: 280px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .hero-phone-inner {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    }
+    .hero-phone-screen {
+      background: var(--bg-2);
+      border-radius: 26px;
+      overflow: hidden;
+      aspect-ratio: 9/19.5;
+      display: flex;
+      flex-direction: column;
+    }
+    .phone-notch {
+      height: 28px;
+      background: var(--bg-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .phone-notch-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .phone-screen-content {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .phone-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .phone-card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--teal-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .phone-card-body { flex: 1; min-width: 0; }
+    .phone-card-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .phone-card-meta {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .phone-card-badge {
+      background: var(--teal);
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .phone-map-placeholder {
+      background: linear-gradient(135deg, var(--bg-3) 0%, #0D2D2A 100%);
+      border-radius: 14px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(13,148,136,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .phone-map-placeholder::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30 Q15 20 30 30 Q45 40 60 30' stroke='%230D948830' fill='none' stroke-width='1'/%3E%3Ccircle cx='30' cy='30' r='3' fill='%230D9488'/%3E%3C/svg%3E") repeat;
+    }
+    .phone-map-label {
+      font-size: 0.7rem;
+      color: var(--teal-bright);
+      font-weight: 600;
+      z-index: 1;
+    }
+    .phone-glow-ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      border: 1px solid rgba(13,148,136,0.15);
+      pointer-events: none;
+    }
+    .phone-glow-ring:nth-child(2) {
+      width: 280px; height: 280px;
+      border-color: rgba(13,148,136,0.08);
+    }
+
+    /* ─── Comparison Strip ───────────────────────── */
+    .comparison {
+      padding: 80px 0;
+    }
+    .comparison-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .comparison-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      background: var(--bg-3);
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-header div {
+      padding: 16px 24px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--muted-2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .comparison-header div:last-child { color: var(--teal-bright); text-align: center; }
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .comparison-row:last-child { border-bottom: none; }
+    .comparison-row div {
+      padding: 14px 24px;
+      font-size: 0.9rem;
+    }
+    .comparison-feature { font-weight: 500; }
+    .comparison-fishbrain {
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .comparison-honeyhole {
+      text-align: center;
+      color: var(--teal-bright);
+      font-weight: 700;
+    }
+    .comparison-check { color: var(--teal-bright); }
+    .comparison-x { color: #EF4444; }
+    .comparison-limited { color: var(--amber); }
+
+    /* ─── Features ──────────────────────────────── */
+    .features { padding: 80px 0; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 56px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .feature-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-4px);
+    }
+    .feature-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+    }
+    .feature-card:nth-child(1) .feature-icon { background: rgba(13,148,136,0.15); }
+    .feature-card:nth-child(2) .feature-icon { background: rgba(245,158,11,0.15); }
+    .feature-card:nth-child(3) .feature-icon { background: rgba(168,85,247,0.15); }
+    .feature-card:nth-child(4) .feature-icon { background: rgba(59,130,246,0.15); }
+    .feature-card h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      color: var(--muted-2);
+      font-size: 0.925rem;
+      line-height: 1.6;
+    }
+
+    /* ─── Pricing ──────────────────────────────── */
+    .pricing { padding: 80px 0; }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 720px;
+      margin: 56px auto 0;
+    }
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      position: relative;
+    }
+    .pricing-card.featured {
+      border-color: var(--teal);
+      box-shadow: 0 0 40px rgba(13,148,136,0.15);
+    }
+    .pricing-card.featured::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--teal);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 16px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .pricing-tier {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .pricing-amount {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .pricing-amount .price {
+      font-size: 3rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .pricing-amount .period {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .pricing-desc {
+      color: var(--muted-2);
+      font-size: 0.875rem;
+      margin-bottom: 28px;
+      min-height: 42px;
+    }
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: var(--muted-2);
+    }
+    .pricing-features li strong { color: var(--text); }
+    .pricing-features .check { color: var(--teal-bright); flex-shrink: 0; }
+    .pricing-card .btn { width: 100%; justify-content: center; }
+    .pricing-free-cta {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .pricing-free-cta a {
+      color: var(--teal-bright);
+      text-decoration: none;
+    }
+    .pricing-free-cta a:hover { text-decoration: underline; }
+
+    /* ─── How It Works ────────────────────────── */
+    .how { padding: 80px 0; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-top: 56px;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(16.67% + 20px);
+      right: calc(16.67% + 20px);
+      height: 1px;
+      background: linear-gradient(90deg, var(--teal) 0%, var(--border) 50%, var(--teal) 100%);
+    }
+    .step { text-align: center; }
+    .step-num {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: white;
+      font-weight: 900;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 30px var(--teal-glow);
+    }
+    .step h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+    .step p { color: var(--muted-2); font-size: 0.9rem; line-height: 1.5; }
+
+    /* ─── CTA Section ─────────────────────────── */
+    .cta-section {
+      padding: 100px 0;
+      text-align: center;
+      position: relative;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(13,148,136,0.1) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-section .section-title { margin-bottom: 12px; }
+    .cta-section .section-sub { margin-bottom: 40px; }
+    .cta-email-form {
+      display: flex;
+      gap: 12px;
+      max-width: 480px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .cta-email-form input {
+      flex: 1;
+      min-width: 220px;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--white);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .cta-email-form input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px var(--teal-dim);
+    }
+    .cta-email-form input::placeholder { color: var(--muted); }
+    .cta-note {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ─── Footer ──────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+    }
+    footer .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    footer .nav-logo { text-decoration: none; }
+    footer p {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    footer ul {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+    footer ul a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      transition: color 0.2s;
+    }
+    footer ul a:hover { color: var(--text); }
+
+    /* ─── Success States ───────────────────────── */
+    .form-success {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      background: rgba(13,148,136,0.15);
+      border: 1px solid var(--teal);
+      border-radius: var(--radius);
+      color: var(--teal-bright);
+      font-weight: 600;
+    }
+    .form-success.show { display: flex; }
+    .form-error {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius);
+      color: #FCA5A5;
+      font-size: 0.875rem;
+    }
+    .form-error.show { display: flex; }
+    .form-loading {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px;
+      color: var(--muted-2);
+      font-size: 0.875rem;
+    }
+    .form-loading.show { display: flex; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Responsive ───────────────────────────── */
+    @media (max-width: 768px) {
+      nav ul { display: none; }
+      nav .mobile-menu-btn { display: block; }
+      .hero { padding: 120px 0 60px; }
+      .hero-email-form { flex-direction: column; }
+      .hero-email-form input { min-width: unset; width: 100%; }
+      .hero-email-form .btn { width: 100%; justify-content: center; }
+      .comparison-header, .comparison-row { grid-template-columns: 1.5fr 0.8fr 0.8fr; }
+      .comparison-header div, .comparison-row div { padding: 12px 14px; font-size: 0.8rem; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+      .steps { grid-template-columns: 1fr; gap: 32px; }
+      .steps::before { display: none; }
+      footer .container { flex-direction: column; text-align: center; }
+      footer ul { justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .comparison { overflow-x: auto; }
+      .comparison-table { min-width: 500px; }
+      .section-title { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Navbar ─────────────────────────────────── -->
+  <nav>
+    <div class="container">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-icon">🐟</div>
+        <span class="nav-logo-text">HoneyHole</span>
+      </a>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#join" class="btn btn-primary nav-cta">Join Waitlist</a></li>
+      </ul>
+      <button class="mobile-menu-btn" aria-label="Menu">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ───────────────────────────────────── -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="tag">Coming Soon — iOS &amp; Android</span>
+      </div>
+      <h1>Find Your<br /><em>Honey Hole</em></h1>
+      <p class="hero-tagline">The offline-first fishing logbook that puts your spots, your catches, and your data — on your phone. No paywalls. No cell signal required.</p>
+
+      <form class="hero-email-form" id="hero-form" onsubmit="handleSubmit(event, 'hero')">
+        <input type="email" name="email" placeholder="your@email.com" required autocomplete="email" />
+        <button type="submit" class="btn btn-primary">Join Waitlist →</button>
+      </form>
+      <div class="form-success" id="hero-success">🎣 You're on the list! We'll be in touch.</div>
+      <div class="form-error" id="hero-error"></div>
+      <p class="hero-social-proof">Join <strong id="waitlist-count">847</strong> anglers already on the waitlist</p>
+
+      <div class="hero-visual">
+        <div class="phone-glow-ring"></div>
+        <div class="phone-glow-ring"></div>
+        <div class="hero-phone">
+          <div class="hero-phone-inner">
+            <div class="hero-phone-screen">
+              <div class="phone-notch">
+                <div class="phone-notch-dot"></div>
+                <div class="phone-notch-dot"></div>
+              </div>
+              <div class="phone-screen-content">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <span style="font-size:0.7rem;color:#94A3B8;">Good morning</span>
+                  <span style="font-size:0.7rem;color:#0D9488;">🐟 Bite: HIGH</span>
+                </div>
+                <div style="height:4px;background:#111827;border-radius:4px;overflow:hidden;margin-bottom:12px;">
+                  <div style="width:78%;height:100%;background:linear-gradient(90deg,#0D9488,#14B8A6);border-radius:4px;"></div>
+                </div>
+                <div class="phone-card">
+                  <div class="phone-card-icon">🎣</div>
+                  <div class="phone-card-body">
+                    <div class="phone-card-title">Largemouth Bass</div>
+                    <div class="phone-card-meta">4.2 lbs · 18 in · Honey Hole Creek</div>
+                  </div>
+                  <div class="phone-card-badge">✓</div>
+                </div>
+                <div class="phone-card">
+                  <div class="phone-card-icon">🌤️</div>
+                  <div class="phone-card-body">
+                    <div class="phone-card-title">72°F · Wind 8mph NW</div>
+                    <div class="phone-card-meta">Moon: Waning Gibbous · UV 6</div>
+                  </div>
+                </div>
+                <div class="phone-map-placeholder">
+                  <span class="phone-map-label">📍 Honey Hole Creek — 2.4 mi</span>
+                </div>
+                <div class="phone-card" style="background:rgba(13,148,136,0.1);border-color:rgba(13,148,136,0.3);">
+                  <div class="phone-card-icon">🤖</div>
+                  <div class="phone-card-body">
+                    <div class="phone-card-title" style="color:#14B8A6;">🐟 Best now: Largemouth Bass</div>
+                    <div class="phone-card-meta">AI Prediction · 91% confidence</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Comparison ──────────────────────────────── -->
+  <section class="comparison">
+    <div class="container">
+      <div class="section-label">
+        <span class="tag">vs. The Competition</span>
+      </div>
+      <h2 class="section-title" style="text-align:center;margin-bottom:40px;">Why anglers are switching</h2>
+      <div class="comparison-table">
+        <div class="comparison-header">
+          <div>Feature</div>
+          <div>Fishbrain</div>
+          <div>HoneyHole</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">Price</div>
+          <div class="comparison-fishbrain">$75–80/yr</div>
+          <div class="comparison-honeyhole">$29.99/yr <span style="color:#22C55E;font-size:0.7rem;display:block;font-weight:400;">(60% less)</span></div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">Offline maps</div>
+          <div class="comparison-fishbrain"><span class="comparison-x">✗</span></div>
+          <div class="comparison-honeyhole"><span class="comparison-check">✓</span> Free</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">GPS waypoints</div>
+          <div class="comparison-fishbrain"><span class="comparison-limited">Limited</span></div>
+          <div class="comparison-honeyhole"><span class="comparison-check">✓</span> Unlimited</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">Catch logbook</div>
+          <div class="comparison-fishbrain"><span class="comparison-limited">Paywall</span></div>
+          <div class="comparison-honeyhole"><span class="comparison-check">✓</span> Free</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">Photo verification</div>
+          <div class="comparison-fishbrain"><span class="comparison-x">✗</span></div>
+          <div class="comparison-honeyhole"><span class="comparison-check">✓</span></div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">AI fish predictions</div>
+          <div class="comparison-fishbrain"><span class="comparison-limited">Paywall</span></div>
+          <div class="comparison-honeyhole"><span class="comparison-check">✓</span> Premium</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">Data stays on YOUR device</div>
+          <div class="comparison-fishbrain"><span class="comparison-x">✗</span></div>
+          <div class="comparison-honeyhole"><span class="comparison-check">✓</span> By default</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-feature">One-time purchase option</div>
+          <div class="comparison-fishbrain"><span class="comparison-x">✗</span></div>
+          <div class="comparison-honeyhole"><span class="comparison-check">✓</span> Planned</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Features ───────────────────────────────── -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-label">
+        <span class="tag">Features</span>
+      </div>
+      <h2 class="section-title" style="text-align:center;">Everything you need.<br />Nothing you don't.</h2>
+      <p class="section-sub" style="text-align:center;">Built by anglers, for anglers. No bloat, no paywalls on the basics.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📡</div>
+          <h3>Offline First</h3>
+          <p>Download maps before you head out. Track waypoints, log catches, and view weather — even in areas with zero cell signal. Your data lives on your phone.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🗺️</div>
+          <h3>Depth Maps</h3>
+          <p>NOAA bathymetric charts overlaid on your map. Find the drop-offs, the holes, the structure — the spots where fish actually hide.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>AI Fish Predictions</h3>
+          <p>Powered by weather, water temp, pressure, lunar phase, and your own catch history. Not voodoo — actual pattern recognition.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Your Data, Your Device</h3>
+          <p>Everything on-device by default. Optional encrypted cloud sync for premium. Fishbrain sells your data — HoneyHole never touches it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── How It Works ─────────────────────────────── -->
+  <section class="how" id="how">
+    <div class="container">
+      <div class="section-label">
+        <span class="tag">How It Works</span>
+      </div>
+      <h2 class="section-title" style="text-align:center;">From first cast to comeback.</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Drop a Pin</h3>
+          <p>Mark your honey hole with a GPS waypoint. Add notes, depth, and tags. All saved offline on your phone.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Log Your Catch</h3>
+          <p>Record species, weight, length, conditions, bait, and photo. Verified catches get a badge that can't be faked.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Come Back Smarter</h3>
+          <p>AI predictions tell you when the fish are biting. Stats show your patterns. The more you log, the smarter it gets.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Pricing ─────────────────────────────────── -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-label">
+        <span class="tag">Pricing</span>
+      </div>
+      <h2 class="section-title" style="text-align:center;">Honest pricing.<br />No surprises.</h2>
+      <p class="section-sub" style="text-align:center;margin-bottom:8px;">Start free. Upgrade when you want more.</p>
+      <p class="pricing-free-cta">Core features are always free. <a href="#join">Join the waitlist</a> for early access pricing.</p>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-tier">Free</div>
+          <div class="pricing-amount">
+            <span class="price">$0</span>
+            <span class="period">forever</span>
+          </div>
+          <p class="pricing-desc">All the basics. No credit card. No catch.</p>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> Catch logbook — unlimited</li>
+            <li><span class="check">✓</span> GPS waypoints — up to 3 spots</li>
+            <li><span class="check">✓</span> Weather & solunar widget</li>
+            <li><span class="check">✓</span> Species encyclopedia (250+ fish)</li>
+            <li><span class="check">✓</span> Offline maps — 1 region</li>
+            <li><span class="check">✓</span> Statistics dashboard</li>
+          </ul>
+          <button class="btn btn-outline" onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">Get Started Free</button>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="pricing-tier" style="color:var(--teal-bright);">Premium</div>
+          <div class="pricing-amount">
+            <span class="price" style="color:var(--teal-bright);">$4.99</span>
+            <span class="period">/month</span>
+          </div>
+          <p class="pricing-desc" style="min-height:auto;margin-bottom:8px;">Everything in Free, plus:</p>
+          <p style="font-size:0.8rem;color:#94A3B8;margin-bottom:16px;">or $29.99/year (save 50%)</p>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> <strong>Unlimited spots</strong></li>
+            <li><span class="check">✓</span> <strong>AI fish activity predictions</strong></li>
+            <li><span class="check">✓</span> <strong>Unlimited offline maps</strong></li>
+            <li><span class="check">✓</span> <strong>Depth contour overlays</strong></li>
+            <li><span class="check">✓</span> <strong>Encrypted cloud sync</strong></li>
+            <li><span class="check">✓</span> <strong>Priority support</strong></li>
+          </ul>
+          <button class="btn btn-primary" onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Final CTA ──────────────────────────────── -->
+  <section class="cta-section" id="join">
+    <div class="container">
+      <span class="tag" style="margin-bottom:20px;">Early Access</span>
+      <h2 class="section-title">Be first on the water.</h2>
+      <p class="section-sub">Join the waitlist. Early members get founding member pricing — locked in for life.</p>
+
+      <form class="cta-email-form" id="cta-form" onsubmit="handleSubmit(event, 'cta')">
+        <input type="email" name="email" placeholder="your@email.com" required autocomplete="email" />
+        <button type="submit" class="btn btn-primary">Join the Waitlist →</button>
+      </form>
+      <div class="form-success" id="cta-success">🎣 You're on the list! We'll reach out when we launch.</div>
+      <div class="form-error" id="cta-error"></div>
+      <p class="cta-note">No spam. No upsells before launch. Just the good stuff when we're ready.</p>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-icon">🐟</div>
+        <span class="nav-logo-text" style="font-size:1rem;">HoneyHole</span>
+      </a>
+      <p>© 2026 HoneyHole. Built with care for anglers.</p>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- ─── Script ─────────────────────────────────── -->
+  <script>
+    let waitlistCount = 847;
+    const STORAGE_KEY = 'honeyhole_waitlist';
+
+    // Load persisted count
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY + '_count');
+      if (saved) waitlistCount = parseInt(saved, 10);
+      document.getElementById('waitlist-count').textContent = waitlistCount.toLocaleString();
+    } catch(e) {}
+
+    function handleSubmit(event, formId) {
+      event.preventDefault();
+      const form = document.getElementById(formId + '-form');
+      const email = form.querySelector('input[type="email"]').value.trim();
+      const btn = form.querySelector('button[type="submit"]');
+      const successEl = document.getElementById(formId + '-success');
+      const errorEl = document.getElementById(formId + '-error');
+
+      // Validate
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        errorEl.textContent = 'Please enter a valid email address.';
+        errorEl.classList.add('show');
+        setTimeout(() => errorEl.classList.remove('show'), 4000);
+        return;
+      }
+
+      // Check if already submitted
+      try {
+        const submitted = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        if (submitted.includes(email)) {
+          errorEl.textContent = "You're already on the list! We'll be in touch.";
+          errorEl.classList.add('show');
+          setTimeout(() => errorEl.classList.remove('show'), 4000);
+          return;
+        }
+      } catch(e) {}
+
+      // Show loading
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Joining...';
+
+      // Simulate async submission (replace with real API call)
+      setTimeout(() => {
+        // Persist
+        try {
+          const submitted = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          submitted.push(email);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(submitted));
+          waitlistCount++;
+          localStorage.setItem(STORAGE_KEY + '_count', waitlistCount);
+          document.getElementById('waitlist-count').textContent = waitlistCount.toLocaleString();
+        } catch(e) {}
+
+        // Success
+        form.style.display = 'none';
+        successEl.classList.add('show');
+
+        // Also show on other form if present
+        const otherForm = formId === 'hero'
+          ? document.getElementById('cta-form')
+          : document.getElementById('hero-form');
+        const otherSuccess = formId === 'hero'
+          ? document.getElementById('cta-success')
+          : document.getElementById('hero-success');
+        if (otherForm && otherForm.style.display !== 'none') {
+          otherForm.style.display = 'none';
+          otherSuccess.classList.add('show');
+        }
+      }, 1200);
+    }
+
+    // Navbar scroll effect
+    const nav = document.querySelector('nav');
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if (y > 60) {
+        nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.5)';
+      } else {
+        nav.style.boxShadow = 'none';
+      }
+      lastScroll = y;
+    }, { passive: true });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+
+  <!-- Simple tracking pixel (vanity, not real analytics) -->
+  <script>
+    // Track pageview (lightweight)
+    try {
+      const stats = JSON.parse(localStorage.getItem('hh_stats') || '{"pv":0,"uniq":0}');
+      stats.pv++;
+      localStorage.setItem('hh_stats', JSON.stringify(stats));
+    } catch(e) {}
+  </script>
+</body>
+</html>
